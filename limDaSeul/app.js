@@ -40,7 +40,7 @@ app.get("/ping", (req, res) => {
 app.post("/books", async (req, res, next) => {
   const { title, description, coverImage } = req.body
 
-  await mysqlDataSource.query(
+  await appDataSource.query(
     `INSERT INTO books(
       title,
       description,
