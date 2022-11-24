@@ -43,6 +43,16 @@ app.post('/signup',async(req,res)=>{
     res.status(200).json({message:"userCreated"});
 })
 
+app.post('/posts',async(req,res)=>{
+    const {title,content} = req.body
+    await myDataSource.query(
+      `INSERT INTO posts (
+        title,
+        content
+     ) VALUES(?,?);
+    `,[title,content]);
+    res.status(200).json({message:"postCreated"});
+ })
 
 const server = http.createServer(app);
 const PORT = process.env.PORT;
