@@ -5,9 +5,7 @@ const cors = require("cors");
 const morgan =  require("morgan");
 const dotenv = require("dotenv");
 
-const { DataSource, Column } = require('typeorm'); 
-const { title } = require("process");
-const { stringify } = require("querystring");
+const { DataSource } = require('typeorm'); 
 
 dotenv.config()
 
@@ -34,18 +32,16 @@ app.use(morgan('combined'));
 app.post('/signup',async(req,res)=>{
     const {name,email,password,age} = req.body
     await myDataSource.query(
-        `INSERT INTO users
-        (
-        name,
-        email,
-        password,
-        age
-        ) VALUES(?,?,?,?);
-        `,[name,email,password,age]
-    );
+        `INSERT INTO users (
+          name,
+          email,
+          password,
+          age
+       ) VALUES(?,?,?,?);
+        `,[name,email,password,age]);
+
     res.status(200).json({message:"userCreated"});
 })
-
 
 
 const server = http.createServer(app);
