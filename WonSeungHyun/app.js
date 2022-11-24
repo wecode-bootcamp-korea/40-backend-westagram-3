@@ -5,7 +5,8 @@ const morgan = require("morgan");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const { DataSource } = require("typeorm");
+const { DataSource, InsertValuesMissingError } = require("typeorm");
+const { profile } = require("console");
 const myDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
   host: process.env.TYPEORM_HOST,
@@ -37,3 +38,18 @@ const start = async () => {
 };
 
 start();
+
+app.post("/users", async (req, res, next) => {
+  const { name, email, profile_image } = req.body;
+
+  await myDataSource.query(
+    `INSERT INTO users(
+    name,
+    email,
+    profile_image
+    
+  )VALUES (?, ?, ?)`,
+    [name, email, profile_image]
+  );
+  res.status(201).json({ message: "successfully created" });
+});
