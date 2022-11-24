@@ -13,7 +13,7 @@ const myDataSource = new DataSource({
   username: process.env.TYPEORM_USERNAME,
   password: process.env.TYPEORM_PASSWORD,
   database: process.env.TYPEORM_DATABASE
-})
+}) 
 
 myDataSource.initialize()
   .then(() => {
