@@ -1,12 +1,12 @@
-const dotenv = require("dotenv");
-dotenv.config()
-
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const { DataSource } = require('typeorm');
 
-const myDataSource = new DataSource({
+const dotenv = require("dotenv");
+dotenv.config()
+
+const database = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
   host: process.env.TYPEOMR_HOST,
   port: process.env.TYPEORM_PORT,
@@ -15,13 +15,13 @@ const myDataSource = new DataSource({
   database: process.env.TYPEORM_DATABASE
 }) 
 
-myDataSource.initialize()
+database.initialize()
   .then(() => {
     console.log("Data Source has been initialized!")
   })
   .catch((err) => {
     console.error("Error during Data Source initialization", err)
-    myDataSource.destroy()
+    database.destroy()
   })
 
 const app = express();
@@ -40,7 +40,7 @@ app.get("/ping", (req, res) => {
 app.post("/books", async (req, res, next) => {
   const { title, description, coverImage } = req.body
 
-  await myDataSource.query(
+  await mysqlDataSource.query(
     `INSERT INTO books(
       title,
       description,
@@ -55,7 +55,7 @@ app.post("/books", async (req, res, next) => {
 
 //Get all books
 app.get('/books', async (req, res) => {
-  await myDataSource.manager.query(
+  await appDataSource.manager.query(
     `SELECT
           b.id,
           b.title,
@@ -69,7 +69,7 @@ app.get('/books', async (req, res) => {
 
 //Get all books along with authors
 app.get('/books-with-authors', async(req, res) => {
-  await myDataSource.manager.query(
+  await appDataSource.manager.query(
     `SELECT
           books.id,
           books.title,
@@ -90,7 +90,7 @@ app.get('/books-with-authors', async(req, res) => {
 app.patch('/books', async(req, res) => {
   const { title, description, coverImage, bookID } = req.body
 
-  await myDataSource.query(
+  await appDataSource.query(
     `UPDATE books
     SET
       title = ?,
@@ -107,7 +107,7 @@ app.patch('/books', async(req, res) => {
 app.delete('/books/:bookId', async(req, res) => {
   const { bookId } = req.params;
 
-  await myDataSource.query(
+  await appDataSource.query(
     `DELETE FROM books
     WHERE books.id = ${bookId}
     `);
