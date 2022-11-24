@@ -1,11 +1,9 @@
-const http = require("http");
-const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
-
 const dotenv = require("dotenv");
 dotenv.config()
 
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
 const { DataSource } = require('typeorm');
 
 const myDataSource = new DataSource({
@@ -41,8 +39,6 @@ app.get("/ping", (req, res) => {
 //Create a book
 app.post("/books", async (req, res, next) => {
   const { title, description, coverImage } = req.body
-
-  // console.log(req)
 
   await myDataSource.query(
     `INSERT INTO books(
