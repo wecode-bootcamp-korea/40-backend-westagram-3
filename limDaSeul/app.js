@@ -1,4 +1,3 @@
-const http = require("http");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -32,8 +31,8 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-//Create users
-app.post("/users", async (req, res, next) => {
+//Create users table
+app.post("/users", async(req, res, next) => {
   const { name, email, profile_image, password } = req.body
 
   await appDataSource.query(
@@ -48,6 +47,39 @@ app.post("/users", async (req, res, next) => {
   );
 
   res.status(201).json({message : "userCreated"});
+})
+
+//Create posts table
+app.post("/posts", async(req, res, next) => {
+  const { title, content, user_id, posting_image } = req.body
+
+  await appDataSource.query(
+    `INSERT INTO posts(
+      title,
+      content,
+      user_id,
+      posting_image
+    ) VALUES(?, ?, ?, ?);
+    `,
+    [title, content, user_id, posting_image]
+  );
+
+  res.status(200).json({message : "postCreated"});
+})
+
+//Get posts list
+app.get("/posts", async(req, res) => {
+  await appDataSource.manager.query(
+    `SELECT
+        p.user_id,
+        u.user_ProfileImage,
+        p.id,
+        p.posting_image,
+        p.content
+      FROM posts p, users u`
+      ,(err, rows) => {
+         res.status(200).json(rows);
+    })
 })
 
 const start = async () => {
