@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(cors());
 app.use(morgan("dev"));
 
-app.get("/ping", cors(), function (req, res, next) {
+app.get("/ping", function (req, res, next) {
   res.json({ message: "pong" });
 });
 
@@ -40,7 +40,8 @@ app.post("/users", async (req, res, next) => {
   const { name, email, profile_image } = req.body;
 
   await myDataSource.query(
-    `INSERT INTO users(
+    `
+    INSERT INTO users(
     name,
     email,
     profile_image
