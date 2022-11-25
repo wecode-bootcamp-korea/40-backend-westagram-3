@@ -1,10 +1,11 @@
 const http = require("http");
+
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const { DataSource, InsertValuesMissingError } = require("typeorm");
-const dotenv = require("dotenv");
+
+const { DataSource } = require("typeorm");
 const app = express();
 
 const myDataSource = new DataSource({
@@ -24,7 +25,7 @@ app.use(express.json());
 app.use(cors());
 app.use(morgan("dev"));
 
-app.get("/ping", cors(), function (req, res, next) {
+app.get("/ping", function (req, res, next) {
   res.json({ message: "pong" });
 });
 
