@@ -7,11 +7,6 @@ const { DataSource, InsertValuesMissingError } = require("typeorm");
 const dotenv = require("dotenv");
 const app = express();
 
-<<<<<<< Updated upstream
-const { DataSource } = require("typeorm");
-=======
-const { profile } = require("console");
->>>>>>> Stashed changes
 const myDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
   host: process.env.TYPEORM_HOST,
