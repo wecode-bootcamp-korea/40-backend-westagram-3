@@ -1,15 +1,22 @@
-
+//Built-in package
 const http =require ("http");
+
+//Third-party package
 const express = require("express");
 const cors = require("cors");
 const morgan =  require("morgan");
 const dotenv = require("dotenv");
-
 const { DataSource } = require('typeorm'); 
 
+//Custom package
 dotenv.config()
+app = express();
+app.use(express.json());
+app.use(cors());
+app.use(morgan('combined'));
 
-const myDataSource = new DataSource({
+
+const appDataSource = new DataSource({
     type: process.env.TYPEORM_CONNECTION,
     host: process.env.TYPEORM_HOST,
     port: process.env.TYPEORM_PORT,
@@ -17,21 +24,18 @@ const myDataSource = new DataSource({
     password: process.env.TYPEORM_PASSWORD,
     database: process.env.TYPEORM_DATABASE
 })
-myDataSource.initialize()
+
+//Error handling
+appDataSource.initialize()
   .then(()=>{
     console.log("Data Source has been initialized!")
   });
 
-app = express();
 
-app.use(express.json());
-app.use(cors());
-app.use(morgan('combined'));
-
-
+//User signup endpoint
 app.post('/signup',async(req,res)=>{
     const {name,email,password,age} = req.body
-    await myDataSource.query(
+    await appDataSource.query(
         `INSERT INTO users (
           name,
           email,
@@ -43,9 +47,11 @@ app.post('/signup',async(req,res)=>{
     res.status(200).json({message:"userCreated"});
 })
 
+
+//Posting endpoint
 app.post('/posts',async(req,res)=>{
     const {title,content} = req.body
-    await myDataSource.query(
+    await appDataSource.query(
       `INSERT INTO posts (
         title,
         content
@@ -53,6 +59,8 @@ app.post('/posts',async(req,res)=>{
     `,[title,content]);
     res.status(200).json({message:"postCreated"});
  })
+
+
 
 const server = http.createServer(app);
 const PORT = process.env.PORT;
