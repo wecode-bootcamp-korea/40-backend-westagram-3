@@ -1,3 +1,4 @@
+const http = require("http");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -6,7 +7,7 @@ const { DataSource } = require('typeorm');
 const dotenv = require("dotenv");
 dotenv.config()
 
-const database = new DataSource({
+const appDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
   host: process.env.TYPEOMR_HOST,
   port: process.env.TYPEORM_PORT,
@@ -15,7 +16,7 @@ const database = new DataSource({
   database: process.env.TYPEORM_DATABASE
 }) 
 
-database.initialize()
+appDataSource.initialize()
   .then(() => {
     console.log("Data Source has been initialized!")
   })
@@ -31,88 +32,23 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-//health check
-app.get("/ping", (req, res) => {
-  res.status(200).json({"message" : "pong"});
-})
-
-//Create a book
-app.post("/books", async (req, res, next) => {
-  const { title, description, coverImage } = req.body
+//Create users
+app.post("/users", async (req, res, next) => {
+  const { name, email, profile_image, password } = req.body
 
   await appDataSource.query(
-    `INSERT INTO books(
-      title,
-      description,
-      cover_image
-    ) VALUES (?, ?, ?);
+    `INSERT INTO users(
+      name,
+      email,
+      profile_image,
+      password
+    ) VALUES (?, ?, ?, ?);
     `,
-    [title, description, coverImage]
+    [name, email, profile_image, password]
   );
 
-  res.status(201).json({message : "successfully created"});
+  res.status(201).json({message : "userCreated"});
 })
-
-//Get all books
-app.get('/books', async (req, res) => {
-  await appDataSource.manager.query(
-    `SELECT
-          b.id,
-          b.title,
-          b.description,
-          b.cover_image
-      FROM books b`
-    ,(err, rows) => {
-        res.status(200).json(rows);
-    })
-});
-
-//Get all books along with authors
-app.get('/books-with-authors', async(req, res) => {
-  await appDataSource.manager.query(
-    `SELECT
-          books.id,
-          books.title,
-          books.description,
-          books.cover_image,
-          authors.first_name,
-          authors.last_name,
-          authors.age
-        FROM books_authors ba
-        INNER JOIN authors ON ba.author_id = authors.id
-        INNER JOIN books ON ba.book_id = books.id`
-    ,(err, rows) => {
-        res.status(200).json(rows);
-    })
-});
-
-//Update a single book by its primary key
-app.patch('/books', async(req, res) => {
-  const { title, description, coverImage, bookID } = req.body
-
-  await appDataSource.query(
-    `UPDATE books
-    SET
-      title = ?,
-      description = ?,
-      cover_image = ?
-      WHERE id = ?
-      `,
-      [ title, description, coverImage, bookID ]
-  );
-    res.status(201).json({ message : "successfully updated"});
-});
-
-//Delete a book
-app.delete('/books/:bookId', async(req, res) => {
-  const { bookId } = req.params;
-
-  await appDataSource.query(
-    `DELETE FROM books
-    WHERE books.id = ${bookId}
-    `);
-    res.status(200).json({ message : "successfully deleted" });
-});
 
 const start = async () => {
   try{
