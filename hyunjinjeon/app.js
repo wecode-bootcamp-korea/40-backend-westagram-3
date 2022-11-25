@@ -25,7 +25,7 @@ const appDataSource = new DataSource({
     database: process.env.TYPEORM_DATABASE
 })
 
-//Error handling
+//Error handlingg
 appDataSource.initialize()
   .then(()=>{
     console.log("Data Source has been initialized!")
@@ -66,7 +66,7 @@ const server = http.createServer(app);
 const PORT = process.env.PORT;
 
 const start = async () =>{
-    server.listen(PORT, ()=> console.log(`server is listening to ${PORT}`))
+    server.listen(PORT, ()=> console.log(`SERVER is listening tooooo ${PORT}`))
 }
 
 start()
