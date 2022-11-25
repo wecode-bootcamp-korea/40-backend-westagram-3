@@ -1,12 +1,11 @@
 const http = require("http");
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const dotenv = require("dotenv");
-dotenv.config();
+const { DataSource } = require("typeorm");
+const app = express();
 
-const { DataSource, InsertValuesMissingError } = require("typeorm");
-const { profile } = require("console");
 const myDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
   host: process.env.TYPEORM_HOST,
@@ -19,8 +18,6 @@ const myDataSource = new DataSource({
 myDataSource.initialize().then(() => {
   console.log("Data Source has been initialized!");
 });
-
-const app = express();
 
 app.use(express.json());
 app.use(cors());
