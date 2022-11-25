@@ -103,7 +103,6 @@ app.patch('/books', async(req, res) => {
     res.status(201).json({ message : "successfully updated"});
 });
 
-//Delete a book
 app.delete('/books/:bookId', async(req, res) => {
   const { bookId } = req.params;
 
