@@ -48,6 +48,7 @@ app.post('/signup',async(req,res)=>{
 })
 
 
+
 //Posting endpoint
 app.post('/posts',async(req,res)=>{
     const {title,content} = req.body
