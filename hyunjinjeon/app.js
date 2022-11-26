@@ -31,7 +31,7 @@ appDataSource.initialize()
   });
 
 
-// User signup endpoint
+// 유저 회원 가입 엔드포인트
 app.post('/signup',async(req,res)=>{
     const {name,email,password,age} = req.body
     await appDataSource.query(
@@ -47,7 +47,7 @@ app.post('/signup',async(req,res)=>{
 })
 
 
-// Posting endpoint
+// 게시물등록 엔드포인트
 app.post('/posts',async(req,res)=>{
     const {title,content} = req.body
     await appDataSource.query(
@@ -60,15 +60,15 @@ app.post('/posts',async(req,res)=>{
  })
 
 
-
+//게시물 전체조회 엔드포인트
  app.get('/lookposts',async(req,res)=>{
   await appDataSource.query(
     `SELECT
-          users.user_name,
-          posts.title,
-          posts.created_at
-      FROM postss
-      LEFT JOIN users ON users.user_id = posts.user_id;
+        users.user_name,
+        posts.title,
+        posts.created_at
+     FROM posts
+     LEFT JOIN users ON users.user_id = posts.user_id;
       `,(err,rows)=>
       {res.status(200).json(rows);});
   });
