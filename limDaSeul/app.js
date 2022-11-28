@@ -31,7 +31,7 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-//Create users table
+//Create user table
 app.post("/users", async(req, res, next) => {
   const { name, email, profile_image, password } = req.body
 
@@ -49,38 +49,80 @@ app.post("/users", async(req, res, next) => {
   res.status(201).json({message : "userCreated"});
 })
 
-//Create posts table
+//Create post table
 app.post("/posts", async(req, res, next) => {
-  const { title, content, user_id, posting_image } = req.body
+  const { title, content, posting_image, user_id } = req.body
 
   await appDataSource.query(
     `INSERT INTO posts(
       title,
       content,
-      user_id,
-      posting_image
+      posting_image,
+      user_id
     ) VALUES(?, ?, ?, ?);
     `,
-    [title, content, user_id, posting_image]
+    [title, content, posting_image, user_id]
   );
 
   res.status(200).json({message : "postCreated"});
 })
 
-//Get posts list
+//Get post list
 app.get("/posts", async(req, res) => {
   await appDataSource.manager.query(
     `SELECT
-        p.user_id,
-        u.user_ProfileImage,
-        p.id,
-        p.posting_image,
-        p.content
-      FROM posts p, users u`
-      ,(err, rows) => {
+        u.profile_image as userProfileImage,
+        u.id as userID,
+        p.id as postingId,
+        p.posting_image as postingImageUrl,
+        p.content as postingContent
+      FROM users u, posts p
+      WHERE u.id = p.id
+      `,
+      (err, rows) => {
          res.status(200).json(rows);
     })
 })
+
+//Update post
+app.patch('/posts/update', async(req, res) => {
+  const {title, content, posting_image, postID} = req.body
+
+  await appDataSource.query(
+    `UPDATE posts
+    SET
+      title = ?,
+      content = ?,
+      posting_image = ?
+    WHERE posts.id = ?
+    `,
+    [title, content, posting_image, postID]
+  );
+  res.status(201).json({message : "[update]mission complete."});
+});
+
+//Delete post
+app.delete('/posts/:postID', async(req, res) => {
+  const {postID} = req.params;
+
+  await appDataSource.query(
+    `DELETE FROM posts
+    WHERE posts.id = ${postID}
+    `);
+      res.status(200).json({message : "postingDeleted"});
+})
+
+//Update user's 'like it'
+app.post('/likelist', async(req, res) => {
+  const {user_id, postID} = req.body
+
+  await appDataSource.query(
+    `
+    `
+  )
+})
+
+
 
 const start = async () => {
   try{
