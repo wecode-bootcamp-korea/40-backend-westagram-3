@@ -42,9 +42,9 @@ app.post("/users", async (req, res, next) => {
   await myDataSource.query(
     `
     INSERT INTO users(
-    name,
-    email,
-    profile_image
+      name,
+      email,
+      profile_image
     
   )VALUES (?, ?, ?)`,
     [name, email, profile_image]
