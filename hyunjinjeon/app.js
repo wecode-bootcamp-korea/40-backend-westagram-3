@@ -74,7 +74,31 @@ app.post('/posts',async(req,res)=>{
   });
   
 
+  //게시물 특정유저 게시물조회 엔드포인트
 
+
+app.get("/user/post/:userId", async (req,res) => {
+  const userId = req.params.userId;
+  
+  const user = await appDataSource.query(
+    `SELECT
+      users.id as userId,
+      users.profile_image as userprofileImage
+    FROM users
+    WHERE users.id = ${userId};`,
+  );
+  const post = await appDataSource.query(
+    `SELECT
+      posts.id as postingId,
+      posts.title as postingImageUrl,
+      posts.content as postingContent
+    FROM posts
+    WHERE posts.user_id = ${userId};`,
+  );
+  user[0].posting = post;
+  const result = user[0];
+  res.status(200).json({data:result})
+})
 
 
 const server = http.createServer(app);
