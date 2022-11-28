@@ -6,7 +6,7 @@ const morgan = require("morgan");
 const { DataSource } = require("typeorm");
 const app = express();
 
-const myDataSource = new DataSource({
+const appDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
   host: process.env.TYPEORM_HOST,
   port: process.env.TYPEORM_PORT,
@@ -15,7 +15,7 @@ const myDataSource = new DataSource({
   database: process.env.TYPEORM_DATABASE,
 });
 
-myDataSource.initialize().then(() => {
+appDataSource.initialize().then(() => {
   console.log("Data Source has been initialized!");
 });
 
@@ -39,7 +39,7 @@ start();
 app.post("/users", async (req, res, next) => {
   const { name, email, profile_image } = req.body;
 
-  await myDataSource.query(
+  await appDataSource.query(
     `
     INSERT INTO users(
       name,
