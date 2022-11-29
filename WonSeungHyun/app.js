@@ -6,7 +6,7 @@ const morgan = require("morgan");
 const { DataSource } = require("typeorm");
 const app = express();
 
-const myDataSource = new DataSource({
+const appDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
   host: process.env.TYPEORM_HOST,
   port: process.env.TYPEORM_PORT,
@@ -15,7 +15,7 @@ const myDataSource = new DataSource({
   database: process.env.TYPEORM_DATABASE,
 });
 
-myDataSource.initialize().then(() => {
+appDataSource.initialize().then(() => {
   console.log("Data Source has been initialized!");
 });
 
@@ -39,7 +39,7 @@ start();
 app.post("/users", async (req, res, next) => {
   const { name, email, profile_image } = req.body;
 
-  await myDataSource.query(
+  await appDataSource.query(
     `
     INSERT INTO users(
     name,
@@ -53,7 +53,7 @@ app.post("/users", async (req, res, next) => {
 });
 
 app.get("/search", async (req, res) => {
-  await myDataSource.query(
+  await appDataSource.query(
     `SELECT
      u.id as userId,
      u.profile_image as userProfileImage,
@@ -69,7 +69,7 @@ app.get("/search", async (req, res) => {
 });
 ////유저가 작성한 게시물 불러오기 기능///
 app.get("/search_user", async (req, res) => {
-  await myDataSource.query(
+  await appDataSource.query(
     `SELECT
     u.id as userId,
     u.profile_image as userProfileImage,
@@ -88,7 +88,7 @@ app.get("/search_user", async (req, res) => {
 ////특정 유저 게시물 조회 기능///
 app.get("/userposts/:inputId", async (req, res) => {
   const userId = req.params.inputId;
-  const user = await myDataSource.manager.query(
+  const user = await appDataSource.manager.query(
     `SELECT
           users.id as userId,
           users.profile_image as userProfileImage
@@ -96,7 +96,7 @@ app.get("/userposts/:inputId", async (req, res) => {
       WHERE users.id = ${userId};
       `
   );
-  const userpost = await myDataSource.manager.query(
+  const userpost = await appDataSource.manager.query(
     `SELECT 
           posts.id as postingId,
           posts.posting_img as postingImageUrl,
@@ -113,7 +113,7 @@ app.get("/userposts/:inputId", async (req, res) => {
 
 app.delete("/userposts/:inputId", async (req, res) => {
   const postId = req.params.inputId;
-  const post = await myDataSource.manager.query(
+  const post = await appDataSource.manager.query(
     `DELETE 
      FROM posts
      WHERE posts.id = ${postId};
@@ -127,7 +127,7 @@ app.delete("/userposts/:inputId", async (req, res) => {
 app.patch("/userposts/:inputId/:patchContent", async (req, res) => {
   const postId = req.params.inputId;
   const patchCon = req.params.patchContent;
-  const post = await myDataSource.manager.query(
+  const post = await appDataSource.manager.query(
     `UPDATE posts SET
      content = '${patchCon}'
      WHERE posts.id = ${postId};
@@ -140,7 +140,7 @@ app.patch("/userposts/:inputId/:patchContent", async (req, res) => {
 app.post("/userslikes", async (req, res, next) => {
   const { user_id, post_id } = req.body;
 
-  await myDataSource.query(
+  await appDataSource.query(
     `
     INSERT INTO likes(
     user_id,
