@@ -43,7 +43,7 @@ app.post('/signup',async(req,res)=>{
        ) VALUES(?,?,?,?); 
         `,[name,email,password,age]);
 
-    res.status(200).json({message:"userCreated"});
+    res.status(201).json({message:"userCreated"});
 })
 
 
@@ -56,7 +56,7 @@ app.post('/posts',async(req,res)=>{
         content
      ) VALUES(?,?);
     `,[title,content]);
-    res.status(200).json({message:"postCreated"});
+    res.status(201).json({message:"postCreated"});
  })
 
 
@@ -78,7 +78,6 @@ app.post('/posts',async(req,res)=>{
 
 app.get("/user/post/:userId", async (req,res) => {
   const userId = req.params.userId;
-  
   const user = await appDataSource.query(
     `SELECT
       users.id as userId,
@@ -118,11 +117,37 @@ app.patch("/post/:postId", async (req, res, next) => {
     FROM posts INNER JOIN users on users.id = posts.user_id where posts.id like ${postId};`,
     );
     const result = post[0];
-    res.status(200).json({data : result});
+    res.status(204).json({data : result});
   })
 
 
+
   
+//게시글 삭제 엔드포인트
+app.delete("/post/:postId",async(req,res,next)=>{
+  const postId = req.params.postId;
+  await appDataSource.query(
+    `DELETE FROM posts
+    WHERE posts.id = ${postId}`,
+    );
+    res.status(204).json({message:"postingDeleted"});
+})
+
+//좋아요 누르기 엔드포인트
+app.post('/like/:userId/:postId',async(req,res,next)=>{
+    const userId = req.params.userId;
+    const postId = req.params.postId;
+    const {userid,postid} = req.body;
+    await appDataSource.query(
+      `INSERT INTO likes (
+        user_id,
+        post_id
+     ) VALUES(${userId},${postId});
+    `,[userid,postid]);
+    res.status(200).json({message:"likeCreated"})
+   
+})
+
 
 const server = http.createServer(app);
 const PORT = process.env.PORT;
