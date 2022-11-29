@@ -79,7 +79,7 @@ app.get("/posts", async(req, res) => {
       FROM users u, posts p
       WHERE u.id = p.id
       `,
-      (err, rows) => {
+      (err, rows) =>  {
          res.status(200).json(rows);
     })
 })
@@ -117,11 +117,39 @@ app.post('/likelist', async(req, res) => {
   const {user_id, postID} = req.body
 
   await appDataSource.query(
-    `
-    `
-  )
+    `INSERT INTO likelist(
+      user_id,
+      postID
+    )VALUES(?,?);
+    `,
+    [user_id, postID]
+  );
+
+  res.status(200).json({message : "likeCreated"});
 })
 
+//Get user's post
+app.get("/users/postlist/:userID", async(req, res) => {
+  const userID  = req.params.userID
+  await appDataSource.query(
+    `SELECT
+        u.id as userID,
+        u.profile_image as userProfileImage,
+      JSON_ARRAYAGG(
+        JSON_OBJECT(
+        p.id, postingId, 
+        p.posting_image, postingImageUrl,
+        p.content, postingContent))
+      FROM posts p
+      INNER JOIN users u
+      ON u.id = ${userID}
+      GROUP BY u.id
+      `,
+      (err, rows) => {
+        res.status(200).json(rows)
+       }
+    )
+});
 
 
 const start = async () => {
