@@ -85,20 +85,33 @@ app.get("/posts", async(req, res) => {
 })
 
 //Update post
-app.patch('/posts/update', async(req, res) => {
-  const {title, content, posting_image, postID} = req.body
-
+app.patch('/posts/update_des/:postID', async(req, res) => {
+  const postID = req.params.postID;
+  const {title, content, posting_image} = req.body
   await appDataSource.query(
     `UPDATE posts
     SET
       title = ?,
       content = ?,
       posting_image = ?
-    WHERE posts.id = ?
-    `,
-    [title, content, posting_image, postID]
-  );
-  res.status(201).json({message : "[update]mission complete."});
+    WHERE id = ${postID}
+   `,
+    [title, content, posting_image]
+    );
+
+  const posting = await appDataSource.query(
+    `SELECT
+        u.id as userID,
+        u.name as userName,
+        p.id as postingId,
+        p.title as postingTitle,
+        p.content as postingContent
+      FROM posts p
+      INNER JOIN users u
+      ON u.id = p.user_id
+      WHERE p.id
+    `);
+  res.status(201).json({data : posting[0]});
 });
 
 //Delete post
