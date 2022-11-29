@@ -1,7 +1,6 @@
 -- migrate:up
 
-CREATE TABLE posts 
-(
+CREATE TABLE posts (
   id int NOT NULL AUTO_INCREMENT,
   title varchar(50) NOT NULL,
   content varchar(2000) DEFAULT NULL,

@@ -76,7 +76,6 @@ app.post('/posts',async(req,res)=>{
 
   //게시물 특정유저 게시물조회 엔드포인트
 
-
 app.get("/user/post/:userId", async (req,res) => {
   const userId = req.params.userId;
   
@@ -95,11 +94,35 @@ app.get("/user/post/:userId", async (req,res) => {
     FROM posts
     WHERE posts.user_id = ${userId};`,
   );
-  user[0].posting = post;
+  user[0].postings = post;
   const result = user[0];
   res.status(200).json({data:result})
 })
 
+//게시물 수정 엔드포인트
+app.patch("/post/:postId", async (req, res, next) => {
+  const postId = req.params.postId;
+  const {content} = req.body;
+  await appDataSource.query(
+    `UPDATE posts SET
+      content = ?
+    WHERE id = ${postId}
+    `,[content]);
+  const post = await appDataSource.query(
+    `SELECT
+      users.id as userId,
+      users.name as userName,
+      posts.id as postingId,
+      posts.title as postingTitle,
+      posts.content as postingContent
+    FROM posts INNER JOIN users on users.id = posts.user_id where posts.id like ${postId};`,
+    );
+    const result = post[0];
+    res.status(200).json({data : result});
+  })
+
+
+  //
 
 const server = http.createServer(app);
 const PORT = process.env.PORT;
@@ -108,3 +131,7 @@ const start = async () =>{
     server.listen(PORT, ()=> console.log(`server is listening to ${PORT}`))
 }
 start()
+
+
+
+
