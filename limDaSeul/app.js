@@ -63,12 +63,12 @@ app.post("/posts", async(req, res, next) => {
     `,
     [title, content, posting_image, user_id]
   );
-
   res.status(200).json({message : "postCreated"});
 })
 
 //Get post list
 app.get("/posts", async(req, res) => {
+
   await appDataSource.manager.query(
     `SELECT
         u.profile_image as userProfileImage,
@@ -88,6 +88,7 @@ app.get("/posts", async(req, res) => {
 app.patch('/posts/update_des/:postID', async(req, res) => {
   const postID = req.params.postID;
   const {title, content, posting_image} = req.body
+
   await appDataSource.query(
     `UPDATE posts
     SET
@@ -144,6 +145,7 @@ app.post('/likelist', async(req, res) => {
 //Get user's post
 app.get("/users/postlist/:userID", async(req, res) => {
   const userID  = req.params.userID
+  
   await appDataSource.query(
     `SELECT
         u.id as userID,
