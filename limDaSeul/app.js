@@ -9,7 +9,7 @@ const { DataSource } = require('typeorm');
 
 const app = express();
 
-const database = new DataSource({
+const appDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
   host: process.env.TYPEOMR_HOST,
   port: process.env.TYPEORM_PORT,
@@ -18,7 +18,7 @@ const database = new DataSource({
   database: process.env.TYPEORM_DATABASE
 }) 
 
-database.initialize()
+appDataSource.initialize()
   .then(() => {
     console.log("Data Source has been initialized!")
   })
@@ -31,12 +31,23 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-//health check
-app.get("/ping", (req, res) => {
-  res.status(200).json({"message" : "pong"});
-})
+//Create users
+app.post("/users", async (req, res, next) => {
+  const { name, email, profile_image, password } = req.body
 
-const PORT = process.env.PORT
+  await appDataSource.query(
+    `INSERT INTO users(
+      name,
+      email,
+      profile_image,
+      password
+    ) VALUES (?, ?, ?, ?);
+    `,
+    [name, email, profile_image, password]
+  );
+
+  res.status(201).json({message : "userCreated"});
+})
 
 const start = async () => {
   try{
