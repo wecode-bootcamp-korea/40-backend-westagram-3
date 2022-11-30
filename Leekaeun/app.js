@@ -99,4 +99,22 @@ app.get("/posts", async (request, response) => {
   );
 });
 
+app.get("/posts/:userId", async (request, response) => {
+  const { userId } = request.params;
+  const posts = await appDataSource.query(
+    `
+    SELECT
+      u.id as userId,
+      u.profile_image as userProfileImage,
+      p.id as postingTitle,
+      p.content as postingContent
+    FROM posts as p
+    INNER JOIN users as u ON u.id = p.user-id
+    WHERE p.user_id = ?
+  `,
+    [userId]
+  );
+  response.status(200).json({ data: post });
+});
+
 app.listen(3000, () => console.log(`SERVER IS LISTENING ON ${PORT}`));
