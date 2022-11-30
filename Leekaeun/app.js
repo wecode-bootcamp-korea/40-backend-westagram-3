@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const { DataSource } = require("typeorm");
+const { response, request } = require("express");
 
 const app = express();
 
@@ -31,7 +32,7 @@ app.use(cors());
 app.use(morgan("dev"));
 // async ... await -> 비동기함수 실행
 app.post("/users", async (request, response) => {
-  const { name, email, profile_image, password } = request.body; // 비구조화할당, 구조분해할당
+  const { name, email, profileImage, password } = request.body; // 비구조화할당, 구조분해할당
 
   // ================================ 참고 ================================
   // const request = {
@@ -59,7 +60,7 @@ app.post("/users", async (request, response) => {
         password
     ) VALUES (?, ?, ?, ?);
     `,
-    [name, email, profile_image, password]
+    [name, email, profileImage, password]
   );
 
   response.status(201).json({ message: "seccessfully created" });
@@ -67,9 +68,35 @@ app.post("/users", async (request, response) => {
 
 const PORT = process.env.PORT;
 
-// localhost:3000/ping >> { message:"pong" }
-app.get("/ping", (req, res) => {
-  res.json({ message: "pong" });
+app.post("/post", async (request, response) => {
+  const { title, content, imageUrl, userId } = request.body;
+
+  await appDataSource.query(
+    `INSERT INTO posts(
+      title,
+      content,
+      post_image,
+      user_id
+    ) VALUES (?, ?, ?, ?)`,
+    [title, content, imageUrl, userId]
+  );
+  response.status(201).json({ message: "postCreated" });
+});
+
+app.get("/posts", async (request, response) => {
+  await appDataSource.query(
+    `SELECT
+      u.id as userId,
+      u.profile_image as userProfileImage,
+      p.id as postingId,
+      p.content as PostingContent
+     FROM posts p
+     INNER JOIN users u ON u.id = p.user_id
+     WHERE p.user_id = u.id`,
+    (err, rows) => {
+      response.status(200).json(rows);
+    }
+  );
 });
 
 app.listen(3000, () => console.log(`SERVER IS LISTENING ON ${PORT}`));
