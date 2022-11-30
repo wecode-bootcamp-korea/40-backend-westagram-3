@@ -4,6 +4,8 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const { DataSource } = require("typeorm");
+const bcrypt = require("bcrypt");
+const saltRounds = 12;
 const app = express();
 
 const appDataSource = new DataSource({
@@ -37,17 +39,20 @@ const start = async () => {
 start();
 
 app.post("/users", async (req, res, next) => {
-  const { name, email, profile_image } = req.body;
+  const { name, email, profile_image, password } = req.body;
+
+  const makeHash = await bcrypt.hash(password, saltRounds); // (4)
 
   await appDataSource.query(
     `
     INSERT INTO users(
       name,
       email,
-      profile_image
+      profile_image,
+      password
     
-  )VALUES (?, ?, ?)`,
-    [name, email, profile_image]
+  )VALUES (?, ?, ? , ?)`,
+    [name, email, profile_image, makeHash]
   );
   res.status(201).json({ message: "successfully created" });
 });
