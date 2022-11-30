@@ -9,12 +9,12 @@ const bcrypt = require('bcrypt');
 const dotenv = require("dotenv");
 const { DataSource } = require('typeorm'); 
 
-//Custom
+//Custom package
+dotenv.config()
 app = express();
 app.use(express.json());
 app.use(cors());
 app.use(morgan('combined'));
-dotenv.config()
 
 const appDataSource = new DataSource({
     type: process.env.TYPEORM_CONNECTION,
@@ -25,14 +25,14 @@ const appDataSource = new DataSource({
     database: process.env.TYPEORM_DATABASE
 })
 
-//Error handling
+//Error handlingg
 appDataSource.initialize()
   .then(()=>{
     console.log("Data Source has been initialized!")
   });
 
 
-// 유저 회원 가입 엔드포인트
+//User signup endpoint
 app.post('/signup',async(req,res)=>{
     const {name,email,password,age} = req.body
     await appDataSource.query(
@@ -48,7 +48,8 @@ app.post('/signup',async(req,res)=>{
 })
 
 
-// 게시물등록 엔드포인트
+
+//Posting endpoint
 app.post('/posts',async(req,res)=>{
     const {title,content} = req.body
     await appDataSource.query(
@@ -152,6 +153,6 @@ const server = http.createServer(app);
 const PORT = process.env.PORT;
 
 const start = async () =>{
-    server.listen(PORT, ()=> console.log(`server is listening to ${PORT}`))
+    server.listen(PORT, ()=> console.log(`SERVER is listening tooooo ${PORT}`))
 }
 start()
