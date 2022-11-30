@@ -61,7 +61,7 @@ app.post('/posts',async(req,res)=>{
 
 
 //게시물 전체조회 엔드포인트
- app.get('/lookposts',async(req,res)=>{
+ app.get('/posts',async(req,res)=>{
   await appDataSource.query(
     `SELECT
         users.user_name,
@@ -76,7 +76,7 @@ app.post('/posts',async(req,res)=>{
 
   //게시물 특정유저 게시물조회 엔드포인트
 
-app.get("/user/post/:userId", async (req,res) => {
+app.get("/userpost/:userId", async (req,res) => {
   const userId = req.params.userId;
   const user = await appDataSource.query(
     `SELECT
@@ -99,7 +99,7 @@ app.get("/user/post/:userId", async (req,res) => {
 })
 
 //게시물 수정 엔드포인트
-app.patch("/post/:postId", async (req, res, next) => {
+app.patch("/modifypost/:postId", async (req, res, next) => {
   const postId = req.params.postId;
   const {content} = req.body;
   await appDataSource.query(
@@ -124,7 +124,7 @@ app.patch("/post/:postId", async (req, res, next) => {
 
   
 //게시글 삭제 엔드포인트
-app.delete("/post/:postId",async(req,res,next)=>{
+app.delete("/deletepost/:postId",async(req,res,next)=>{
   const postId = req.params.postId;
   await appDataSource.query(
     `DELETE FROM posts
