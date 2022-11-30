@@ -36,18 +36,19 @@ const start = async () => {
 
 start();
 
-app.post("/users", async (req, res, next) => {
-  const { name, email, profile_image } = req.body;
+app.post("/users", async (req, res, ) => {
+  const { name, email, profile_image , password} = req.body;
 
   await appDataSource.query(
     `
     INSERT INTO users(
     name,
     email,
-    profile_image
+    profile_image,
+    password
     
-  )VALUES (?, ?, ?)`,
-    [name, email, profile_image]
+  )VALUES (?, ?, ? , ?)`,
+    [name, email, profile_image , password]
   );
   res.status(201).json({ message: "successfully created" });
 });
