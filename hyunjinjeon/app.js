@@ -5,6 +5,7 @@ const http =require ("http");
 const express = require("express");
 const cors = require("cors");
 const morgan =  require("morgan");
+const bcrypt = require('bcrypt'); 
 const dotenv = require("dotenv");
 const { DataSource } = require('typeorm'); 
 
@@ -61,7 +62,7 @@ app.post('/posts',async(req,res)=>{
 
 
 //게시물 전체조회 엔드포인트
- app.get('/posts',async(req,res)=>{
+ app.get('/get',async(req,res)=>{
   await appDataSource.query(
     `SELECT
         users.user_name,
@@ -76,7 +77,7 @@ app.post('/posts',async(req,res)=>{
 
 
 //특정유저 게시물 조회 엔드포인트
-app.get("/userpost/:userId", async (req,res) => {
+app.get("/post/:userId", async (req,res) => {
   const userId = req.params.userId;
     await appDataSource.query(
       `SELECT 
@@ -97,7 +98,7 @@ app.get("/userpost/:userId", async (req,res) => {
 
 
 //게시물 수정 엔드포인트
-app.patch("/modifypost/:postId", async (req, res) => {
+app.patch("/posts/:postId", async (req, res) => {
   const postId = req.params.postId;
   const {content} = req.body;
   await appDataSource.query(
@@ -120,7 +121,7 @@ app.patch("/modifypost/:postId", async (req, res) => {
 
 
 //게시글 삭제 엔드포인트
-app.delete("/deletepost/:postId",async(req,res)=>{
+app.delete("/delete/:postId",async(req,res)=>{
   const postId = req.params.postId;
   await appDataSource.query(
     `DELETE FROM posts
@@ -142,6 +143,9 @@ app.post('/likes',async(req,res)=>{
     res.status(201).json({message:"likeCreated"})
    
 })
+
+
+
 
 
 const server = http.createServer(app);

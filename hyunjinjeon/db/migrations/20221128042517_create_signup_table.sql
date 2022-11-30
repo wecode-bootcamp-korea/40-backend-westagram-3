@@ -1,5 +1,4 @@
--- migrate:up   
-
+-- migrate:up
 CREATE TABLE users (
   id int NOT NULL AUTO_INCREMENT,
   name varchar(50) NOT NULL,
@@ -12,6 +11,5 @@ CREATE TABLE users (
 );
 
 -- migrate:down
-
 DROP TABLE users;
 

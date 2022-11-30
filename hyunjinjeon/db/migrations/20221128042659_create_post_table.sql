@@ -1,5 +1,4 @@
 -- migrate:up
-
 CREATE TABLE posts (
   id int NOT NULL AUTO_INCREMENT,
   title varchar(50) NOT NULL,
@@ -13,7 +12,6 @@ CREATE TABLE posts (
 );
 
 -- migrate:down
-
 DROP TABLE posts;
 
 
