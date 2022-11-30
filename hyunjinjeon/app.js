@@ -72,34 +72,32 @@ app.post('/posts',async(req,res)=>{
       `,(err,rows)=>
       {res.status(200).json(rows);});
   });
-  
 
-  //게시물 특정유저 게시물조회 엔드포인트
 
+
+//특정유저 게시물 조회 엔드포인트
 app.get("/userpost/:userId", async (req,res) => {
   const userId = req.params.userId;
-  const user = await appDataSource.query(
-    `SELECT
-      users.id as userId,
-      users.profile_image as userprofileImage
-    FROM users
-    WHERE users.id = ${userId};`,
-  );
-  const post = await appDataSource.query(
-    `SELECT
-      posts.id as postingId,
-      posts.title as postingImageUrl,
-      posts.content as postingContent
-    FROM posts
-    WHERE posts.user_id = ${userId};`,
-  );
-  user[0].postings = post;
-  const result = user[0];
-  res.status(200).json({data:result})
-})
+    await appDataSource.query(
+      `SELECT 
+        users.id as userId,
+        users.profile_image as userporfileImage,
+        JSON_ARRAYAGG( 
+        JSON_OBJECT(    
+          'postingId',posts.id,
+          'postingTitle',posts.title,
+          'postingContent',posts.content)) as posting
+      FROM users
+      LEFT JOIN posts ON users.id = posts.user_id 
+      where users.id=${userId}
+      GROUP BY users.id;
+      `,(err,row)=>
+      {res.status(200).json({data:row});});
+      })
+
 
 //게시물 수정 엔드포인트
-app.patch("/modifypost/:postId", async (req, res, next) => {
+app.patch("/modifypost/:postId", async (req, res) => {
   const postId = req.params.postId;
   const {content} = req.body;
   await appDataSource.query(
@@ -121,10 +119,8 @@ app.patch("/modifypost/:postId", async (req, res, next) => {
   })
 
 
-
-  
 //게시글 삭제 엔드포인트
-app.delete("/deletepost/:postId",async(req,res,next)=>{
+app.delete("/deletepost/:postId",async(req,res)=>{
   const postId = req.params.postId;
   await appDataSource.query(
     `DELETE FROM posts
@@ -133,18 +129,17 @@ app.delete("/deletepost/:postId",async(req,res,next)=>{
     res.status(204).json({message:"postingDeleted"});
 })
 
+
 //좋아요 누르기 엔드포인트
-app.post('/like/:userId/:postId',async(req,res,next)=>{
-    const userId = req.params.userId;
-    const postId = req.params.postId;
-    const {userid,postid} = req.body;
+app.post('/likes',async(req,res)=>{
+    const {userId,postId} = req.body
     await appDataSource.query(
       `INSERT INTO likes (
         user_id,
         post_id
      ) VALUES(${userId},${postId});
-    `,[userid,postid]);
-    res.status(200).json({message:"likeCreated"})
+    `,);
+    res.status(201).json({message:"likeCreated"})
    
 })
 
@@ -156,7 +151,3 @@ const start = async () =>{
     server.listen(PORT, ()=> console.log(`server is listening to ${PORT}`))
 }
 start()
-
-
-
-
