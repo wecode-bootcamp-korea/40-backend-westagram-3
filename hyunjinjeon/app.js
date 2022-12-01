@@ -5,8 +5,9 @@ const http =require ("http");
 const express = require("express");
 const cors = require("cors");
 const morgan =  require("morgan");
-const bcrypt = require('bcrypt'); 
+const bcrypt = require("bcrypt"); 
 const dotenv = require("dotenv");
+
 const { DataSource } = require('typeorm'); 
 
 //Custom package
@@ -15,6 +16,9 @@ app = express();
 app.use(express.json());
 app.use(cors());
 app.use(morgan('combined'));
+
+
+
 
 const appDataSource = new DataSource({
     type: process.env.TYPEORM_CONNECTION,
@@ -34,19 +38,23 @@ appDataSource.initialize()
 
 //User signup endpoint
 app.post('/signup',async(req,res)=>{
-    const {name,email,password,age} = req.body
-    await appDataSource.query(
-        `INSERT INTO users (
-          user_name,
-          user_email,
-          user_password,
-          user_age
-       ) VALUES(?,?,?,?); 
-        `,[name,email,password,age]);
-
-    res.status(201).json({message:"userCreated"});
+    const {name,email,profile_image,password} = req.body;
+        const hashedPw = await bcrypt.hash(password, 12);
+        try{
+        await appDataSource.query(
+        `INSERT INTO users(
+          name,
+          email,
+          profile_image,
+          password
+        ) VALUES (?,?,?,?)`,
+       [name,email,profile_image,hashedPw]);
+       res.status(201).json({message:"userCreated"});
+       }
+      catch{
+       res.status(400).json({message:"Request Error"});
+    }   
 })
-
 
 
 //Posting endpoint
@@ -66,7 +74,7 @@ app.post('/posts',async(req,res)=>{
  app.get('/get',async(req,res)=>{
   await appDataSource.query(
     `SELECT
-        users.user_name,
+        users.name,
         posts.title,
         posts.created_at
      FROM posts
@@ -144,10 +152,6 @@ app.post('/likes',async(req,res)=>{
     res.status(201).json({message:"likeCreated"})
    
 })
-
-
-
-
 
 const server = http.createServer(app);
 const PORT = process.env.PORT;
