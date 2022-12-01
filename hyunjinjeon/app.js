@@ -6,6 +6,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan =  require("morgan");
 const bcrypt = require("bcrypt"); 
+const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 
 const { DataSource } = require('typeorm'); 
@@ -18,9 +19,7 @@ app.use(cors());
 app.use(morgan('combined'));
 
 
-
-
-const appDataSource = new DataSource({
+const appData = new DataSource({
     type: process.env.TYPEORM_CONNECTION,
     host: process.env.TYPEORM_HOST,
     port: process.env.TYPEORM_PORT,
@@ -30,18 +29,23 @@ const appDataSource = new DataSource({
 })
 
 //Error handlingg
-appDataSource.initialize()
+appData.initialize()
   .then(()=>{
     console.log("Data Source has been initialized!")
   });
 
+  const saltRounds = 12; 
+  const makeHash = async (password, saltRounds) => {
+      return await bcrypt.hash(password, saltRounds); }
+  const checkHash = async (password, hashedPassword) => {
+    return await bcrypt.compare(password, hashedPassword)}
 
 //User signup endpoint
 app.post('/signup',async(req,res)=>{
     const {name,email,profile_image,password} = req.body;
-        const hashedPw = await bcrypt.hash(password, 12);
+        const hashedPw = await makeHash(password, 12);
         try{
-        await appDataSource.query(
+        await appData.query(
         `INSERT INTO users(
           name,
           email,
@@ -54,13 +58,27 @@ app.post('/signup',async(req,res)=>{
       catch{
        res.status(400).json({message:"Request Error"});
     }   
-})
+  })
 
+
+//signin endpoint
+app.post('/signin',async(req,res)=>{
+    const {email,password}=req.body;
+    const user = await appData.query(
+      `SELECT
+        u.email,
+        u.password,
+        FROM users u
+        WHERE u.email=?`
+        ,[email]);
+    const pWmatch =checkHash(password,(users.password).toString())
+
+  })
 
 //Posting endpoint
 app.post('/posts',async(req,res)=>{
     const {title,content} = req.body
-    await appDataSource.query(
+    await appData.query(
       `INSERT INTO posts (
         title,
         content
@@ -72,7 +90,7 @@ app.post('/posts',async(req,res)=>{
 
 //게시물 전체조회 엔드포인트
  app.get('/get',async(req,res)=>{
-  await appDataSource.query(
+  await appData.query(
     `SELECT
         users.name,
         posts.title,
@@ -83,12 +101,10 @@ app.post('/posts',async(req,res)=>{
       {res.status(200).json(rows);});
   });
 
-
-
 //특정유저 게시물 조회 엔드포인트
-app.get("/post/:userId", async (req,res) => {
+app.get("/posts/:userId", async (req,res) => {
   const userId = req.params.userId;
-    await appDataSource.query(
+    await appData.query(
       `SELECT 
         users.id as userId,
         users.profile_image as userporfileImage,
@@ -99,23 +115,21 @@ app.get("/post/:userId", async (req,res) => {
           'postingContent',posts.content)) as posting
       FROM users
       LEFT JOIN posts ON users.id = posts.user_id 
-      where users.id=${userId}
+      WHERE users.id=${userId}
       GROUP BY users.id;
-      `,(err,row)=>
-      {res.status(200).json({data:row});});
-      })
-
+      `,(err, row)=>
+      {res.status(200).json({data:row});});})
 
 //게시물 수정 엔드포인트
 app.patch("/posts/:postId", async (req, res) => {
   const postId = req.params.postId;
   const {content} = req.body;
-  await appDataSource.query(
+  await appData.query(
     `UPDATE posts SET
       content = ?
     WHERE id = ${postId}
     `,[content]);
-  const post = await appDataSource.query(
+  const post = await appData.query(
     `SELECT
       users.id as userId,
       users.name as userName,
@@ -128,35 +142,32 @@ app.patch("/posts/:postId", async (req, res) => {
     res.status(204).json({data : result});
   })
 
-
 //게시글 삭제 엔드포인트
-app.delete("/delete/:postId",async(req,res)=>{
+app.delete("/deletion/:postId",async(req,res)=>{
   const postId = req.params.postId;
-  await appDataSource.query(
+  await appData.query(
     `DELETE FROM posts
     WHERE posts.id = ${postId}`,
     );
     res.status(204).json({message:"postingDeleted"});
 })
 
-
 //좋아요 누르기 엔드포인트
 app.post('/likes',async(req,res)=>{
     const {userId,postId} = req.body
-    await appDataSource.query(
+    await appData.query(
       `INSERT INTO likes (
         user_id,
         post_id
-     ) VALUES(${userId},${postId});
-    `,);
-    res.status(201).json({message:"likeCreated"})
-   
-})
+     ) VALUES(?, ?);
+     `,
+     [userId, postId]);
+     res.status(201).json({message: "likeCreated"})
+ })
 
 const server = http.createServer(app);
 const PORT = process.env.PORT;
 
 const start = async () =>{
-    server.listen(PORT, ()=> console.log(`SERVER is listening tooooo ${PORT}`))
-}
+    server.listen(PORT, ()=> console.log(`SERVER is listening tooooo ${PORT}`))}
 start()
