@@ -49,17 +49,17 @@ app.post("/users", async(req, res, next) => {
 })
 
 app.post("/posts", async(req, res, next) => {
-  const { title, content, posting_image, user_id } = req.body
+  const { title, content, postingImage, userId } = req.body
 
   await appDataSource.query(
     `INSERT INTO posts(
       title,
       content,
-      posting_image,
-      user_id
+      postingImage,
+      userId
     ) VALUES(?, ?, ?, ?);
     `,
-    [title, content, posting_image, user_id]
+    [title, content, postingImage, userId]
   );
   res.status(200).json({message : "postCreated"});
 })
@@ -71,7 +71,7 @@ app.get("/posts", async(req, res) => {
         u.profileImage as userProfileImage,
         u.id as userId,
         p.id as postingId,
-        p.posting_image as postingImageUrl,
+        p.postingImage as postingImageUrl,
         p.content as postingContent
       FROM users u, posts p
       WHERE u.id = p.id
@@ -83,17 +83,17 @@ app.get("/posts", async(req, res) => {
 
 app.patch('/posts/update/:postId', async(req, res) => {
   const postId = req.params.postId;
-  const {title, content, posting_image} = req.body
+  const { title, content, postingImage } = req.body
 
   await appDataSource.query(
     `UPDATE posts
     SET
       title = ?,
       content = ?,
-      posting_image = ?
+      postingImage = ?
     WHERE id = ${postId}
    `,
-    [title, content, posting_image]
+    [title, content, postingImage]
     );
 
   const posting = await appDataSource.query(
@@ -105,14 +105,14 @@ app.patch('/posts/update/:postId', async(req, res) => {
         p.content as postingContent
       FROM posts p
       INNER JOIN users u
-      ON u.id = p.user_id
+      ON u.id = p.userId
       WHERE p.id
     `);
   res.status(201).json({data : posting[0]});
 });
 
 app.delete('/posts/:postId', async(req, res) => {
-  const {postId} = req.params;
+  const { postId } = req.params;
 
   await appDataSource.query(
     `DELETE FROM posts
@@ -122,15 +122,15 @@ app.delete('/posts/:postId', async(req, res) => {
 })
 
 app.post('/likes', async(req, res) => {
-  const {user_id, postId} = req.body
+  const { userId, postId } = req.body
 
   await appDataSource.query(
     `INSERT INTO likes(
-      user_id,
+      userId,
       postId
     )VALUES(?,?);
     `,
-    [user_id, postId]
+    [userId, postId]
   );
 
   res.status(200).json({message : "likeCreated"});
@@ -145,8 +145,8 @@ app.get("/users/posts/:userId", async(req, res) => {
         u.profileImage,
       JSON_ARRAYAGG(
         JSON_OBJECT(
-        p.id as postingID, 
-        p.posting_image as postingImageUrl,
+        p.id as postingId, 
+        p.postingImage as postingImageUrl,
         p.content as postingContent
         ))
       FROM posts p
