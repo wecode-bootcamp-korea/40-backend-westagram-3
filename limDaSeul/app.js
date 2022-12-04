@@ -1,10 +1,10 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const { DataSource } = require('typeorm');
 
-const dotenv = require("dotenv");
-dotenv.config()
+const { DataSource } = require('typeorm');
 
 const appDataSource = new DataSource({
   type: process.env.TYPEORM_CONNECTION,
@@ -31,25 +31,23 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-//Create user table
 app.post("/users", async(req, res, next) => {
-  const { name, email, profile_image, password } = req.body
+  const { name, email, profileImage, password } = req.body
 
   await appDataSource.query(
     `INSERT INTO users(
       name,
       email,
-      profile_image,
+      profileImage,
       password
     ) VALUES (?, ?, ?, ?);
     `,
-    [name, email, profile_image, password]
+    [name, email, profileImage, password]
   );
 
   res.status(201).json({message : "userCreated"});
 })
 
-//Create post table
 app.post("/posts", async(req, res, next) => {
   const { title, content, posting_image, user_id } = req.body
 
@@ -66,13 +64,12 @@ app.post("/posts", async(req, res, next) => {
   res.status(200).json({message : "postCreated"});
 })
 
-//Get post list
 app.get("/posts", async(req, res) => {
 
   await appDataSource.manager.query(
     `SELECT
-        u.profile_image as userProfileImage,
-        u.id as userID,
+        u.profileImage as userProfileImage,
+        u.id as userId,
         p.id as postingId,
         p.posting_image as postingImageUrl,
         p.content as postingContent
@@ -84,9 +81,8 @@ app.get("/posts", async(req, res) => {
     })
 })
 
-//Update post
-app.patch('/posts/update_des/:postID', async(req, res) => {
-  const postID = req.params.postID;
+app.patch('/posts/update/:postId', async(req, res) => {
+  const postId = req.params.postId;
   const {title, content, posting_image} = req.body
 
   await appDataSource.query(
@@ -95,14 +91,14 @@ app.patch('/posts/update_des/:postID', async(req, res) => {
       title = ?,
       content = ?,
       posting_image = ?
-    WHERE id = ${postID}
+    WHERE id = ${postId}
    `,
     [title, content, posting_image]
     );
 
   const posting = await appDataSource.query(
     `SELECT
-        u.id as userID,
+        u.id as userId,
         u.name as userName,
         p.id as postingId,
         p.title as postingTitle,
@@ -115,49 +111,47 @@ app.patch('/posts/update_des/:postID', async(req, res) => {
   res.status(201).json({data : posting[0]});
 });
 
-//Delete post
-app.delete('/posts/:postID', async(req, res) => {
-  const {postID} = req.params;
+app.delete('/posts/:postId', async(req, res) => {
+  const {postId} = req.params;
 
   await appDataSource.query(
     `DELETE FROM posts
-    WHERE posts.id = ${postID}
+    WHERE posts.id = ${postId}
     `);
       res.status(200).json({message : "postingDeleted"});
 })
 
-//Update user's 'like it'
-app.post('/likelist', async(req, res) => {
-  const {user_id, postID} = req.body
+app.post('/likes', async(req, res) => {
+  const {user_id, postId} = req.body
 
   await appDataSource.query(
-    `INSERT INTO likelist(
+    `INSERT INTO likes(
       user_id,
-      postID
+      postId
     )VALUES(?,?);
     `,
-    [user_id, postID]
+    [user_id, postId]
   );
 
   res.status(200).json({message : "likeCreated"});
 })
 
-//Get user's post
-app.get("/users/postlist/:userID", async(req, res) => {
-  const userID  = req.params.userID
+app.get("/users/posts/:userId", async(req, res) => {
+  const userId  = req.params.userId
   
   await appDataSource.query(
     `SELECT
-        u.id as userID,
-        u.profile_image as userProfileImage,
+        u.id as userId,
+        u.profileImage,
       JSON_ARRAYAGG(
         JSON_OBJECT(
-        p.id, postingId, 
-        p.posting_image, postingImageUrl,
-        p.content, postingContent))
+        p.id as postingID, 
+        p.posting_image as postingImageUrl,
+        p.content as postingContent
+        ))
       FROM posts p
       INNER JOIN users u
-      ON u.id = ${userID}
+      ON u.id = ${userId}
       GROUP BY u.id
       `,
       (err, rows) => {
